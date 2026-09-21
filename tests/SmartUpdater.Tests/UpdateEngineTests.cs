@@ -111,8 +111,15 @@ public class UpdateEngineTests
         Assert.Equal(new Version(1, 1, 0), f.ReadState().CurrentVersion);
         Assert.Equal(JournalStatus.Valid, f.ReadJournal().Status);
         Assert.Equal(JournalState.Done, f.ReadJournal().Journal!.State);
-        // Progress<T> 在无同步上下文时经线程池回调，等一下再断言
-        SpinWait.SpinUntil(() => progress.ToArray().Any(p => p.Stage == UpdateStage.Commit && p.Processed == p.Total), TimeSpan.FromSeconds(5));
+        // Progress<T> 在无同步上下文时经线程池回调，到达顺序不保证：Commit 与 Verify 的回调都要等到，再断言
+        SpinWait.SpinUntil(
+            () =>
+            {
+                UpdateProgressInfo[] snapshot = progress.ToArray();
+                return snapshot.Any(p => p.Stage == UpdateStage.Commit && p.Processed == p.Total)
+                    && snapshot.Any(p => p.Stage == UpdateStage.Verify && p.Processed == p.Total);
+            },
+            TimeSpan.FromSeconds(5));
         UpdateProgressInfo[] seen = progress.ToArray();
         Assert.Contains(seen, p => p.Stage == UpdateStage.Commit);
         Assert.Contains(seen, p => p.Stage == UpdateStage.Verify);
