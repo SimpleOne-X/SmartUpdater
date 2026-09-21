@@ -7,7 +7,7 @@ on:
     branches: [dev]
 
 permissions:
-  contents: read
+  contents: write        # enablePullRequestAutoMerge 需要
   pull-requests: write
 
 concurrency:
