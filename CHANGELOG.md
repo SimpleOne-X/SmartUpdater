@@ -8,6 +8,12 @@
 
 ## [Unreleased]
 
+## [10.0.1] - 2026-09-21
+
+### Changed
+
+- 包内 README 增加 NuGet 版本徽章。库的代码与行为没有变化，与 10.0.0 一致。
+
 ## [10.0.0] - 2026-09-21
 
 首次发布 NuGet 包 `SimpleOneX.SmartUpdater`。
@@ -27,5 +33,6 @@
   - 支持 HTTP 与文件共享（UNC）两种服务器；目标框架 `net10.0`，仅 Windows，兼容 NativeAOT，零第三方依赖
 - 配套工具（不随包发布）：`SmartUpdater.Packer` 打包与签名图形界面、`MinimalApp.WinForms` 示例、`MockServer` 模拟服务器、端到端脚本
 
-[Unreleased]: https://github.com/SimpleOne-X/SmartUpdater/compare/v10.0.0...HEAD
+[Unreleased]: https://github.com/SimpleOne-X/SmartUpdater/compare/v10.0.1...HEAD
+[10.0.1]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.0.1
 [10.0.0]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.0.0
