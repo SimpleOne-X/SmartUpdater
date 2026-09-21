@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 端到端脚本用的打包入口：Packer 只有图形界面，脚本没法带参数调用它，
+       这里把命令行原样交给 Packer 里的 pack / sign 引擎，退出码原样返回。只服务 tools/e2e，不发布。 -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <AssemblyName>PackerHost</AssemblyName>
+    <RootNamespace>PackerHost</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\SmartUpdater.Packer\SmartUpdater.Packer.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 发布侧唯一的工具：MewUI 图形界面，进程内完成 pack / sign；没有命令行入口，也不发布为 dotnet tool。 -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RootNamespace>SimpleOneX.SmartUpdater.Packer</RootNamespace>
+    <AssemblyName>SmartUpdater.Packer</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <ApplicationIcon>../../assets/X-logo.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 窗口图标：MewUI 从嵌入资源加载。 -->
+    <EmbeddedResource Include="../../assets/X-logo.ico" LogicalName="X-logo.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 界面库，只允许出现在这个 csproj 里。 -->
+    <PackageReference Include="Aprillz.MewUI" Version="0.21.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/SmartUpdater/SmartUpdater.csproj" />
+  </ItemGroup>
+
+</Project>

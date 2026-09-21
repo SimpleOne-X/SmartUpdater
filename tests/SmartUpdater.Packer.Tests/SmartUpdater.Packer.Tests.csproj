@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RootNamespace>SimpleOneX.SmartUpdater.Packer.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="1.1.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/SmartUpdater/SmartUpdater.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Packer 是 net10.0-windows 的 MewUI 程序，测试项目（net10.0）引不了它，也不该间接拿到 MewUI：
+         把与界面无关的引擎与 Logic 源码以链接方式编入，只排除界面文件与程序集特性。 -->
+    <Compile Include="../../tools/SmartUpdater.Packer/**/*.cs" Exclude="../../tools/SmartUpdater.Packer/bin/**;../../tools/SmartUpdater.Packer/obj/**;../../tools/SmartUpdater.Packer/MainView.cs;../../tools/SmartUpdater.Packer/Program.cs;../../tools/SmartUpdater.Packer/AssemblyInfo.cs" LinkBase="Packer" />
+  </ItemGroup>
+
+</Project>

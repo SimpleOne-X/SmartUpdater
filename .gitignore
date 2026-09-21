@@ -1,0 +1,63 @@
+## .NET
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.binlog
+
+## Rider / VS / VS Code
+.vs/
+.idea/
+.vscode/
+*.DotSettings.user
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+!src/**/packages/
+.nuget/
+
+## 测试与覆盖率
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+
+## 本地产物
+*.pdb
+*.cache
+*.tmp
+*.bak
+
+## SmartUpdater 运行期产物
+*.sunew
+*.suold
+.smartupdater/
+
+## 签名私钥 —— 绝不入库
+*.pem
+*.pfx
+*.snk
+*.key
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## e2e 脚本每次运行生成的报告
+tools/e2e/e2e-report.txt
+
+## 本机工具配置与个人脚本
+.claude/
+Delete_obj_bin.bat

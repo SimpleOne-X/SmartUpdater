@@ -1,0 +1,104 @@
+# 发版全自动：推 v* 标签即触发，之后不需要任何手工操作。
+#   verify  ：标签必须落在 main 上；版本号取自标签；构建、测试、包内无 .exe 检查、打包
+#   publish ：verify 全绿才执行；经 Trusted Publishing（GitHub OIDC 换临时 key）推 nuget.org，并建 GitHub Release
+# 仓库里不保存任何 NuGet API key。需要在 nuget.org 上一次性建好信任策略：
+#   Repository Owner=SimpleOne-X、Repository=SmartUpdater、Workflow File=release.yml（只填文件名）。
+# 所有 action 钉 commit SHA，尾注标版本：publish 持 id-token: write，一个被改写的浮动 tag 就能直发 nuget.org。
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: 1
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  verify:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Tag must sit on main
+        shell: bash
+        run: |
+          git fetch origin main --quiet
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main \
+            || { echo "::error::tag $GITHUB_REF_NAME is not on main"; exit 1; }
+      - name: Version from tag
+        id: ver
+        shell: bash
+        run: |
+          ver="${GITHUB_REF_NAME#v}"
+          [[ "$ver" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] \
+            || { echo "::error::tag $GITHUB_REF_NAME is not vMAJOR.MINOR.PATCH[-prerelease]"; exit 1; }
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68   # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Build with the release version
+        run: dotnet build -c Release --no-incremental -p:Version=${{ steps.ver.outputs.version }} -p:ContinuousIntegrationBuild=true
+      - name: Test
+        run: dotnet test -c Release --no-build
+      - name: Pack check (no .exe in the nupkg)
+        shell: powershell
+        run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\pack-check\check-no-executables.ps1 -RepoRoot .
+      - name: Pack
+        run: dotnet pack src/SmartUpdater/SmartUpdater.csproj -c Release --no-build -o artifacts -p:Version=${{ steps.ver.outputs.version }}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a   # v7.0.1
+        with:
+          name: packages
+          path: artifacts
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      id-token: write   # GitHub OIDC → nuget.org 临时 API key
+      contents: write   # 建 GitHub Release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1   # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c   # v8.0.1
+        with:
+          name: packages
+          path: artifacts
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68   # v6.0.0
+        with:
+          global-json-file: global.json
+      # 临时 key 只有 1 小时，紧贴 push 再申请
+      - name: NuGet login (OIDC → temp API key)
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841   # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER || 'Andy_Zhong' }}   # nuget.org 用户名（不是邮箱），可用仓库变量 NUGET_USER 覆盖
+      # .nupkg 旁边的 .snupkg 符号包会一并推送；--skip-duplicate 让 job 重跑不会卡在已发布的版本上
+      - name: Push to nuget.org
+        run: >-
+          dotnet nuget push "artifacts/*.nupkg"
+          --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+      - name: Release notes from CHANGELOG
+        run: |
+          ver="${{ needs.verify.outputs.version }}"
+          awk -v ver="$ver" 'index($0, "## [" ver "]") == 1 { f = 1; next } /^## / { if (f) exit } f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "见 CHANGELOG.md。" > notes.md
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64   # v3.0.3
+        with:
+          name: v${{ needs.verify.outputs.version }}
+          body_path: notes.md
+          prerelease: ${{ contains(needs.verify.outputs.version, '-') }}
+          files: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
