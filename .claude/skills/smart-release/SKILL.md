@@ -1,12 +1,12 @@
 ---
-name: one-release
-description: SmartUpdater 一键发版——用户输入 one-release X.Y.Z（或 /one-release X.Y.Z）就全自动完成定版、CHANGELOG、版本号、本地验绿、推 dev、等自动合并进 main、打 v* 标签、监控发包到 nuget.org 并核对。用户说"发版 / one-release / 发包 X.Y.Z"时使用。勿用于其他项目。
+name: smart-release
+description: SmartUpdater 一键发版——用户输入 smart-release X.Y.Z（或 /smart-release X.Y.Z）就全自动完成定版、CHANGELOG、版本号、本地验绿、推 dev、等自动合并进 main、打 v* 标签、监控发包到 nuget.org 并核对。用户说"发版 / smart-release / 发包 X.Y.Z"时使用。勿用于其他项目。
 argument-hint: "X.Y.Z"
 ---
 
-# one-release：SmartUpdater 一键发版
+# smart-release：SmartUpdater 一键发版
 
-**用户输入 `one-release X.Y.Z`（或 `/one-release X.Y.Z`）就是授权发这个版本，全程不要再问确认。** 只有下面写明"停"的情况才中止并报告原因。
+**用户输入 `smart-release X.Y.Z`（或 `/smart-release X.Y.Z`）就是授权发这个版本，全程不要再问确认。** 只有下面写明"停"的情况才中止并报告原因。
 
 背景：开发在 `dev`；`dev` 推送后 `auto-merge` 工作流自动开 PR 到 `main` 并启用 auto-merge，`build-test` 变绿后自动合并；在 `main` 上打 `v*` 标签后 `release` 工作流自动发到 nuget.org（Trusted Publishing）并创建 GitHub Release。本机不 pack、不 push 包，也没有 NuGet key。
 
