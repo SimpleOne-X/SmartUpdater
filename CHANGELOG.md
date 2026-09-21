@@ -8,7 +8,7 @@
 
 ## [Unreleased]
 
-## [10.0.0] - 待发布
+## [10.0.0] - 2026-09-21
 
 首次发布 NuGet 包 `SimpleOneX.SmartUpdater`。
 
