@@ -1,0 +1,39 @@
+# dev 有新提交时自动开 PR 到 main，并启用 auto-merge：build-test 变绿后由 GitHub 自动合并。
+# 只用 gh CLI，不引入第三方 action。合并之后不会触发别的工作流；发包仍由 main 上的 v* 标签触发。
+name: auto-merge
+
+on:
+  push:
+    branches: [dev]
+
+permissions:
+  contents: write        # enablePullRequestAutoMerge 需要
+  pull-requests: write
+
+concurrency:
+  group: auto-merge
+  cancel-in-progress: false
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Open PR and enable auto-merge
+        run: |
+          set -euo pipefail
+          number=$(gh pr list --base main --head dev --state open --json number --jq '.[0].number // empty')
+          if [ -z "$number" ]; then
+            ahead=$(gh api "repos/$GH_REPO/compare/main...dev" --jq '.ahead_by')
+            if [ "$ahead" = "0" ]; then
+              echo "dev 没有领先 main 的提交，无需开 PR。"
+              exit 0
+            fi
+            number=$(gh pr create --base main --head dev \
+              --title "合并 dev 到 main" \
+              --body "由 auto-merge 工作流自动创建：build-test 通过后自动合并。" | grep -oE '[0-9]+$')
+          fi
+          gh pr merge "$number" --auto --merge
+          echo "PR #$number 已启用 auto-merge。"

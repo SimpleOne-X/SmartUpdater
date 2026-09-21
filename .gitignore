@@ -59,5 +59,6 @@ Desktop.ini
 tools/e2e/e2e-report.txt
 
 ## 本机工具配置与个人脚本
-.claude/
+.claude/*
+!.claude/skills/
 Delete_obj_bin.bat
