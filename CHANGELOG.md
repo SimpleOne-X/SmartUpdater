@@ -8,6 +8,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `ReleaseSigner`：公开的发布条目签名入口（`Sign`、`Verify`、`ImportPrivateKeyPem`、`ExportPublicKey`），服务端可以直接在代码里给 feed 条目签名，规范化与客户端验签完全一致。
+
 ## [10.0.1] - 2026-09-21
 
 ### Changed
