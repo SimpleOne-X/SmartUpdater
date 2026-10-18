@@ -56,6 +56,15 @@ public class ReleaseSignerTests
     }
 
     [Fact]
+    public void ImportPrivateKeyPem_rejects_a_public_key_pem()
+    {
+        using ECDsa k = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        string publicPem = k.ExportSubjectPublicKeyInfoPem();
+
+        Assert.Throws<CryptographicException>(() => ReleaseSigner.ImportPrivateKeyPem(publicPem));
+    }
+
+    [Fact]
     public void ExportPublicKey_matches_the_bcl_spki()
     {
         using ECDsa key = ECDsa.Create(ECCurve.NamedCurves.nistP256);

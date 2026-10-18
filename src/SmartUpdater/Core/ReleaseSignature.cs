@@ -118,6 +118,17 @@ internal static class ReleaseSignature
         {
             key.ImportFromPem(pem);   // 非 PEM → ArgumentException；非 EC 密钥 → CryptographicException
             EnsureP256(key);
+
+            // ImportFromPem 也收公钥 PEM；不在这里拦住，要到签名时才报一个不明所以的错
+            try
+            {
+                _ = key.ExportParameters(includePrivateParameters: true);
+            }
+            catch (CryptographicException ex)
+            {
+                throw new CryptographicException("PEM 里只有公钥，没有私钥。", ex);
+            }
+
             return key;
         }
         catch
