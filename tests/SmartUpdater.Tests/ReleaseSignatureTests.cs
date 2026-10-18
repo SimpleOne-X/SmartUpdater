@@ -13,11 +13,11 @@ public class ReleaseSignatureTests
     private const string SpecExampleCanonicalSha256 = "b3c5fe963b4e349d9d8f4a93b9944bde995592723db107decbe026706f70a4b5";
 
     // 已知答案测试用的公钥与签名。私钥不入库：签名由 openssl 生成，这里只保留公钥和签名结果。
-    private const string TestPublicKeySpki =
+    internal const string TestPublicKeySpki =
         "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEU2KaZUBSStFPqGXB2mPLaVsaT/QMwgPFIuPq7RkHV4dyr8N7hjGJnwOOFoEMEkSMuheQ1RvNNw/zYt7viWsidw==";
 
     // openssl dgst -sha256 -sign key-sec1.pem canonical.json | base64
-    private const string SpecExampleSignature =
+    internal const string SpecExampleSignature =
         "MEYCIQD5NFOrC5Om63eT4Omr/JZYt+pL9hkO/CSJb+1uK5de5gIhAMgCPv1QDNO/E/4XWwKGI4yxBtvvXRJwU5qEfbfZQ5YL";
 
     /// <summary>每次运行现生成一把 P-256 密钥，导出 SEC1 与 PKCS#8 两种 PEM，并附上用 BCL 独立算出的公钥。</summary>
@@ -32,7 +32,7 @@ public class ReleaseSignatureTests
         };
     }
 
-    private static ReleaseEntry SpecExample(string? signature = null) => new()
+    internal static ReleaseEntry SpecExample(string? signature = null) => new()
     {
         Version = new Version(1, 2, 4),
         ReleasedAt = new DateTimeOffset(2026, 9, 18, 10, 0, 0, TimeSpan.Zero),
