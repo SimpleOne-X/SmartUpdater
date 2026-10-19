@@ -8,6 +8,8 @@
 
 ## [Unreleased]
 
+## [10.1.0] - 2026-10-19
+
 ### Added
 
 - `ReleaseSigner`：公开的发布条目签名入口（`Sign`、`Verify`、`ImportPrivateKeyPem`、`ExportPublicKey`），服务端可以直接在代码里给 feed 条目签名，规范化与客户端验签完全一致。
@@ -37,6 +39,7 @@
   - 支持 HTTP 与文件共享（UNC）两种服务器；目标框架 `net10.0`，仅 Windows，兼容 NativeAOT，零第三方依赖
 - 配套工具（不随包发布）：`SmartUpdater.Packer` 打包与签名图形界面、`MinimalApp.WinForms` 示例、`MockServer` 模拟服务器、端到端脚本
 
-[Unreleased]: https://github.com/SimpleOne-X/SmartUpdater/compare/v10.0.1...HEAD
+[Unreleased]: https://github.com/SimpleOne-X/SmartUpdater/compare/v10.1.0...HEAD
+[10.1.0]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.1.0
 [10.0.1]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.0.1
 [10.0.0]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.0.0
