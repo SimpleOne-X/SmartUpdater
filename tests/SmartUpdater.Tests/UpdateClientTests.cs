@@ -253,6 +253,26 @@ public class UpdateClientTests : IDisposable
     }
 
     [Fact]
+    public async Task Startup_line_keeps_only_the_poll_interval_as_its_time()
+    {
+        // 抖动窗口、心跳只是偶尔排查才看的配置，不值得每次启动都占一行的篇幅
+        var h = new Harness(_temp) { Feed = FakeReleaseFeed.Throwing(new HttpRequestException("boom")) };
+        h.Options = new UpdateClientOptions { Feed = h.Feed, JitterWindow = TimeSpan.Zero };
+        using var client = new UpdateClient(h.Options, h.Env, h.Engine, new TransportSet(h.Feed, h.Downloader, null, null));
+        using var cts = new CancellationTokenSource();
+
+        Task run = client.RunAsync(cts.Token);
+        await h.Time.WaitForTimersAsync(1);
+        cts.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run);
+
+        LogEntry startup = Assert.Single(h.Engine.RecordingLog.Entries, e => e.Message.StartsWith("UpdateClient 启动：", StringComparison.Ordinal));
+        Assert.Contains("轮询 300 秒", startup.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("抖动窗口", startup.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("心跳", startup.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Without_a_reporter_nothing_is_queued()
     {
         var h = new Harness(_temp) { Feed = FakeReleaseFeed.Throwing(new HttpRequestException("boom")) };
