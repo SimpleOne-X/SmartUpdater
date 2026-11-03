@@ -237,8 +237,6 @@ public sealed class UpdateClient : IDisposable, IUpdateEventSink
             null,
             $"UpdateClient 启动：AppId={_engine.Layout.AppId}，feed={feed}，"
             + $"轮询 {local.PollInterval.TotalSeconds.ToString(CultureInfo.InvariantCulture)} 秒，"
-            + $"抖动窗口 {local.JitterWindow.TotalSeconds.ToString(CultureInfo.InvariantCulture)} 秒，"
-            + $"心跳 {local.HeartbeatInterval.TotalSeconds.ToString(CultureInfo.InvariantCulture)} 秒，"
             + $"允许降级={source.AllowVersionDowngrade}，验签公钥={(_resolved.PublicKey is null ? "未配置" : "已配置")}");
 
         if (source.AllowUntrustedCertificates)
