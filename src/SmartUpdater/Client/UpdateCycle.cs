@@ -353,7 +353,7 @@ internal sealed class UpdateCycle
             {
                 if (_cachedFeed is not null)
                 {
-                    Log.Information(UpdateStage.Check, "304 未变，沿用缓存的 feed 文档");
+                    Log.Debug(UpdateStage.Check, "304 未变，沿用缓存的 feed 文档");
                     return _cachedFeed;
                 }
 
@@ -427,14 +427,6 @@ internal sealed class UpdateCycle
         Log.Information(
             UpdateStage.Check,
             $"检查：当前 {current}，feed 最高 {top?.ToString() ?? "无"}，结论 {selection.Outcome}");
-
-        foreach (SelectionTrace trace in selection.Traces)
-        {
-            string floor = trace.Verdict == SelectionVerdict.BelowFloor ? $"，minUpdatableFrom {trace.Floor}" : string.Empty;
-            Log.Information(
-                UpdateStage.Check,
-                $"条目 {trace.Entry.Version}：{trace.Verdict}（灰度桶 {trace.Bucket.ToString(CultureInfo.InvariantCulture)}，rolloutPercent {trace.RolloutPercent.ToString(CultureInfo.InvariantCulture)}{floor}）");
-        }
     }
 
     private void TrySave(UpdateState state)

@@ -90,7 +90,7 @@ public class UpdateCycleTests : IDisposable
     }
 
     [Fact]
-    public async Task Check_log_lists_current_top_outcome_and_every_verdict_with_bucket_and_percent()
+    public async Task Check_log_lists_current_top_and_outcome()
     {
         Harness h = Ready(Release("2.0", minUpdatableFrom: "1.9"), Release("1.5", rollout: 0), Release("1.2.4"));
 
@@ -98,11 +98,34 @@ public class UpdateCycleTests : IDisposable
 
         Assert.True(h.Engine.RecordingLog.Contains("当前 1.2.3.0"));
         Assert.True(h.Engine.RecordingLog.Contains("feed 最高 2.0.0.0"));
-        Assert.True(h.Engine.RecordingLog.Contains("BelowFloor"));
-        Assert.True(h.Engine.RecordingLog.Contains("OutOfRollout"));
-        Assert.True(h.Engine.RecordingLog.Contains("rolloutPercent 0"));
-        Assert.True(h.Engine.RecordingLog.Contains("灰度桶"));
         Assert.True(h.Engine.RecordingLog.Contains("Selected"));
+    }
+
+    [Fact]
+    public async Task Check_log_is_a_single_summary_line_per_poll_whatever_the_feed_holds()
+    {
+        // 每个轮询都会走到：feed 保留全部发布中的历史版本，还可能有灰度没覆盖本机的更高版本，日志都只留一行汇总
+        ReleaseEntry[] old = Enumerable.Range(0, 50).Select(i => Release($"1.0.{i}")).ToArray();
+        Harness h = Ready([Release("2.0", rollout: 0), Release("1.2.3"), .. old]);
+
+        await h.Cycle().RunAsync(TestContext.Current.CancellationToken);
+
+        LogEntry line = Assert.Single(h.Engine.RecordingLog.AtLevel(UpdateLogLevel.Information));
+        Assert.Equal("检查：当前 1.2.3.0，feed 最高 2.0.0.0，结论 AlreadyCurrent", line.Message);
+    }
+
+    [Fact]
+    public async Task Cached_feed_304_is_logged_at_debug_not_information()
+    {
+        // 304 每个轮询都有，写进文件日志（Information 起）只是噪音；Debug 仍会送到 LogCallback
+        var h = new Harness(_temp) { Feed = FakeReleaseFeed.WithETag(FeedFixtures.Feed(Release("1.2.3")), "\"e1\"") };
+        UpdateCycle cycle = h.Cycle();
+
+        await cycle.RunAsync(TestContext.Current.CancellationToken);   // 200，建立缓存和 ETag
+        await cycle.RunAsync(TestContext.Current.CancellationToken);   // 304，沿用缓存
+
+        Assert.DoesNotContain(h.Engine.RecordingLog.AtLevel(UpdateLogLevel.Information), e => e.Message.Contains("304", StringComparison.Ordinal));
+        Assert.Contains(h.Engine.RecordingLog.AtLevel(UpdateLogLevel.Debug), e => e.Message.Contains("304", StringComparison.Ordinal));
     }
 
     [Fact]
