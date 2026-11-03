@@ -98,14 +98,13 @@ internal sealed class FileLogger : IUpdateLog, IDisposable
     public static string FileNameFor(DateOnly localDate)
         => FilePrefix + localDate.ToString(DateFormat, CultureInfo.InvariantCulture) + FileExtension;
 
-    /// <summary>把一条日志格式化成单行：<c>UTC | 本地 | 级别 | 阶段 | 消息</c>。消息里的换行替换为空格。</summary>
-    public static string FormatLine(DateTimeOffset utcNow, TimeZoneInfo zone, UpdateLogLevel level, UpdateStage? stage, string message)
+    /// <summary>把一条日志格式化成单行：<c>UTC | 级别 | 阶段 | 消息</c>。消息里的换行替换为空格。</summary>
+    public static string FormatLine(DateTimeOffset utcNow, UpdateLogLevel level, UpdateStage? stage, string message)
     {
-        DateTimeOffset local = TimeZoneInfo.ConvertTime(utcNow, zone);
         string flat = message.ReplaceLineEndings(" ");
         return string.Create(
             CultureInfo.InvariantCulture,
-            $"{utcNow.UtcDateTime:yyyy-MM-dd'T'HH:mm:ss.fff'Z'} | {local:yyyy-MM-dd HH:mm:ss.fff zzz} | {LevelName(level)} | {stage?.ToString() ?? "-"} | {flat}");
+            $"{utcNow.UtcDateTime:yyyy-MM-dd'T'HH:mm:ss.fff'Z'} | {LevelName(level)} | {stage?.ToString() ?? "-"} | {flat}");
     }
 
     /// <inheritdoc />
@@ -178,7 +177,6 @@ internal sealed class FileLogger : IUpdateLog, IDisposable
                 _capReached = true;
                 string sentinel = FormatLine(
                     utcNow,
-                    _time.LocalTimeZone,
                     UpdateLogLevel.Warning,
                     null,
                     string.Create(CultureInfo.InvariantCulture, $"日志文件已达 {_maxFileBytes} 字节上限，今日剩余记录丢弃")) + Environment.NewLine;
@@ -193,7 +191,7 @@ internal sealed class FileLogger : IUpdateLog, IDisposable
 
     private string BuildEntry(DateTimeOffset utcNow, UpdateLogLevel level, UpdateStage? stage, string message, Exception? exception)
     {
-        string line = FormatLine(utcNow, _time.LocalTimeZone, level, stage, message);
+        string line = FormatLine(utcNow, level, stage, message);
         if (exception is null)
         {
             return line + Environment.NewLine;

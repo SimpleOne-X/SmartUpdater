@@ -40,7 +40,7 @@ public class FileLoggerTests
         Assert.Equal(dir.Resolve("logs"), logger.ActiveDirectory);
         Assert.Equal(dir.Resolve("logs/updater-20260918.log"), logger.CurrentFilePath);
         Assert.Equal(
-            new[] { "2026-09-18T10:00:00.000Z | 2026-09-18 18:00:00.000 +08:00 | INFO | Commit | write app.exe" },
+            new[] { "2026-09-18T10:00:00.000Z | INFO | Commit | write app.exe" },
             Lines(logger.CurrentFilePath!));
     }
 
@@ -51,15 +51,15 @@ public class FileLoggerTests
     [InlineData(UpdateLogLevel.Error, UpdateStage.Rollback, "ERROR | Rollback")]
     public void FormatLine_uses_fixed_level_names_and_dash_for_no_stage(UpdateLogLevel level, UpdateStage? stage, string expectedMiddle)
     {
-        string line = FileLogger.FormatLine(Noon, FakeTimeProvider.EastEight, level, stage, "msg");
+        string line = FileLogger.FormatLine(Noon, level, stage, "msg");
 
-        Assert.Equal($"2026-09-18T10:00:00.000Z | 2026-09-18 18:00:00.000 +08:00 | {expectedMiddle} | msg", line);
+        Assert.Equal($"2026-09-18T10:00:00.000Z | {expectedMiddle} | msg", line);
     }
 
     [Fact]
     public void Line_breaks_inside_the_message_are_flattened()
     {
-        string line = FileLogger.FormatLine(Noon, FakeTimeProvider.EastEight, UpdateLogLevel.Information, null, "a\r\nb\nc");
+        string line = FileLogger.FormatLine(Noon, UpdateLogLevel.Information, null, "a\r\nb\nc");
 
         Assert.EndsWith("| a b c", line, StringComparison.Ordinal);
         Assert.DoesNotContain('\n', line);
@@ -160,7 +160,8 @@ public class FileLoggerTests
     {
         using var dir = new TempDirectory();
         var clock = Clock();
-        using var logger = new FileLogger(dir.Resolve("logs"), null, UpdateLogLevel.Debug, clock, maxFileBytes: 250);
+        // 一行约 73 字节（含换行）：上限要落在「写完 2 条（146）之后、写完 3 条（219）之内」，才是 3 条正常 + 1 条哨兵
+        using var logger = new FileLogger(dir.Resolve("logs"), null, UpdateLogLevel.Debug, clock, maxFileBytes: 180);
         string thirty = new('x', 30);
 
         for (int i = 1; i <= 5; i++)
@@ -254,7 +255,7 @@ public class FileLoggerTests
         }
 
         string[] lines = Lines(path);
-        var pattern = new Regex(@"^2026-09-18T10:00:00\.000Z \| 2026-09-18 18:00:00\.000 \+08:00 \| INFO \| - \| thread-\d line \d+$");
+        var pattern = new Regex(@"^2026-09-18T10:00:00\.000Z \| INFO \| - \| thread-\d line \d+$");
         Assert.Equal(threads * perThread, lines.Length);
         Assert.All(lines, l => Assert.Matches(pattern, l));
     }
@@ -275,8 +276,8 @@ public class FileLoggerTests
 
             Assert.Equal("updater-20260918.log", FileLogger.FileNameFor(new DateOnly(2026, 9, 18)));
             Assert.Equal(
-                "2026-09-18T10:00:00.000Z | 2026-09-18 18:00:00.000 +08:00 | INFO | - | msg",
-                FileLogger.FormatLine(Noon, FakeTimeProvider.EastEight, UpdateLogLevel.Information, null, "msg"));
+                "2026-09-18T10:00:00.000Z | INFO | - | msg",
+                FileLogger.FormatLine(Noon, UpdateLogLevel.Information, null, "msg"));
         }
         finally
         {

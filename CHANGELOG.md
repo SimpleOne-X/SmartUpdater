@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## [10.2.0] - 2026-11-03
+
+### Changed
+
+- 更新日志降噪：每个轮询只写一行「检查：当前 …，feed 最高 …，结论 …」汇总，不再逐条目写「条目 x：Reachable（灰度桶…，rolloutPercent…）」。feed 里积累多少历史版本，日志都是一行。选版本的判定逻辑不变。
+- 缓存命中 304 的那行从 Information 降到 Debug，不再写进文件日志（`LogCallback` 仍会收到）。
+- 文件日志每行只留一个时间戳（UTC），去掉本地时间：`UTC | 级别 | 阶段 | 消息`。日志文件名仍按本地日期，所以一个文件里的 UTC 时间会跨两个日期（东八区是前一天 16:00Z 到当天 15:59Z）。
+
 ## [10.1.1] - 2026-10-19
 
 ### Changed
@@ -45,7 +53,8 @@
   - 支持 HTTP 与文件共享（UNC）两种服务器；目标框架 `net10.0`，仅 Windows，兼容 NativeAOT，零第三方依赖
 - 配套工具（不随包发布）：`SmartUpdater.Packer` 打包与签名图形界面、`MinimalApp.WinForms` 示例、`MockServer` 模拟服务器、端到端脚本
 
-[Unreleased]: https://github.com/SimpleOne-X/SmartUpdater/compare/v10.1.1...HEAD
+[Unreleased]: https://github.com/SimpleOne-X/SmartUpdater/compare/v10.2.0...HEAD
+[10.2.0]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.2.0
 [10.1.1]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.1.1
 [10.1.0]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.1.0
 [10.0.1]: https://github.com/SimpleOne-X/SmartUpdater/releases/tag/v10.0.1
